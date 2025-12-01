@@ -1,0 +1,1 @@
+python main.py -P NONE -L NONE -F NONE

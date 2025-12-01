@@ -1,0 +1,12 @@
+const: {
+  value: 10,
+  adress: 0
+  }
+read: {
+  adress: 0
+  }
+bswap: {
+  }
+write: {
+  adress: 1
+  }
