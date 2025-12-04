@@ -1,21 +1,20 @@
 import sys
 
-argsSet = {"ProgrammPath": "-", "FilePath": "-", "Mode": "-"}
-
-acamulator = 0
-RAMmemory = [0] * 64
-application = []
+_argsSet = {"ProgrammPath": "-", "FilePath": "-", "Mode": "-"}
+_acamulator = 0
+_RAMmemory = [0] * 64
+_application = []
 
 def CommandStringPars():
     flag = True
     args = sys.argv[1:]
-    for key in list(argsSet.keys()):
+    for key in list(_argsSet.keys()):
         commandParametr =  "-" + key[0]
         if commandParametr in args:
             pos = args.index(commandParametr)
-            argsSet[key] = args.pop(pos + 1)
+            _argsSet[key] = args.pop(pos + 1)
             args.pop(pos)
-            #print(f"arg {commandParametr} has been set to {argsSet[key]}")
+            #print(f"arg {commandParametr} has been set to {_argsSet[key]}")
         else:
             print(f"Error: argument {commandParametr} isn't set")
             flag = False
@@ -28,62 +27,59 @@ def CommandStringPars():
 
 def CheckInputedArguments():
     try:
-        open(argsSet["FilePath"])
+        open(_argsSet["FilePath"])
     except:
-        print(f"Error: can't find memory file in {argsSet["FilePath"]}, it will be created")
-        open(argsSet["FilePath"], "x")
-        
-    if (not (argsSet["Mode"] in ["Test", "Normal"])):
-        print(f"Error: {argsSet["Mode"]} isn't correct run mode, it will be set to Normal mode")
-        argsSet["Mode"] = "Normal"
-
+        print(f"Error: can't find memory file in " + str(_argsSet["FilePath"]) + ", it will be created")
+        open(_argsSet["FilePath"], "x")
+    if (not (_argsSet["Mode"] in ["Test", "Normal"])):
+        print(f"Error: " + str(_argsSet["Mode"]) + " isn't correct run mode, it will be set to Normal mode")
+        _argsSet["Mode"] = "Normal"
     try:
-        open(argsSet["ProgrammPath"])
+        open(_argsSet["ProgrammPath"])
     except:
-        print(f"Error: can't find program file in {argsSet["ProgrammPath"]}")
+        print(f"Error: can't find program file in " + str(_argsSet["ProgrammPath"]))
         return False
-    
     return True
 
 def Read(adress):
-    global acamulator
-    if (adress < len(RAMmemory)):
-        acamulator = RAMmemory[adress]
+    global _acamulator
+    if (adress < len(_RAMmemory)):
+        _acamulator = _RAMmemory[adress]
     else:
         print("Error: invalid access to memory location")
-    # with open(argsSet["FilePath"]) as f:
+    # with open(_argsSet["FilePath"]) as f:
     #     memory = f.readlines()
     #     if len(memory) < adress or not memory[adress].isdigit:
     #         print("Error: invalid access to memory location")
     #         return 1
     #     else:
-    #         acamulator = memory[adress]
+    #         _acamulator = memory[adress]
     # return 0
 
 def Write(adress, value):
-    if (adress < len(RAMmemory)):
-        RAMmemory[adress] = value
+    if (adress < len(_RAMmemory)):
+        _RAMmemory[adress] = value
     else:
         print("Error: invalid access to memory location")
-    # with open(argsSet["FilePath"]) as f:
+    # with open(_argsSet["FilePath"]) as f:
     #     f.wr
 
 def BSWP():
-    global acamulator
-    #print(bin(acamulator), bin(acamulator)[6:] + bin(acamulator)[2:5], int(bin(acamulator)[6:] + bin(acamulator)[2:5], 2))
-    acamulator = int(bin(acamulator)[6:] + bin(acamulator)[2:5], 2)
+    global _acamulator
+    #print(bin(_acamulator), bin(_acamulator)[6:] + bin(_acamulator)[2:5], int(bin(_acamulator)[6:] + bin(_acamulator)[2:5], 2))
+    _acamulator = int(bin(_acamulator)[6:] + bin(_acamulator)[2:5], 2)
 
 def WriteInFile():
-    with open(argsSet["FilePath"], "w") as f:
+    with open(_argsSet["FilePath"], "w") as f:
         if (f.writable()):
-            for i in RAMmemory:
+            for i in _RAMmemory:
                 f.write(str(i) + " ")
         else:
             return 1
     return 0
 
 def ReadProgram():
-    with open(argsSet["ProgrammPath"]) as f:
+    with open(_argsSet["ProgrammPath"]) as f:
         ParsProgramm(f.read())
 
 def MinorPars(argsPars: str, nameAction: str):
@@ -98,8 +94,12 @@ def MinorPars(argsPars: str, nameAction: str):
     for a in range(len(temp[1])):
         if (":" in temp[1][a]):
             temp[1][a] = temp[1][a].split(":")
-            temp[1][a][1] = int(temp[1][a][1])
-        print(temp[0], temp[1][a], temp[1])
+            try:
+                temp[1][a][1] = int(temp[1][a][1])
+            except:
+                print("Error: invalid syntax")
+                return
+        #print(temp[0], temp[1])
     return temp
 
 def ParsProgramm(ProgramString: str):
@@ -108,18 +108,23 @@ def ParsProgramm(ProgramString: str):
     buf = ""
     for i in range(1, len(prog)):
         if not prog[i][0] in [" ", "\t"]:
-            application.append(MinorPars(buf, func))
+            _application.append(MinorPars(buf, func))
             func = prog[i]
             buf = ""
         else:
             buf += prog[i]
-    application.append(MinorPars(buf, func))
-    #[print(i) for i in application]
-    return application
+    _application.append(MinorPars(buf, func))
+    if (None in _application):
+        return
+    [print(i) for i in _application]
+    return _application
 
 def RunProgam():
-    for i in application:
-        print(i[0], i[1])
+    for i in _application:
+        try:
+            print(i[0], i[1])
+        except:
+            return
         if i[0] == "const":
             buf = dict()
             for a in i[1]:
@@ -128,7 +133,7 @@ def RunProgam():
         elif i[0] == "read":
             Read(i[1][0][1])
         elif i[0] == "write":
-            Write(i[1][0][1], acamulator)
+            Write(i[1][0][1], _acamulator)
         elif i[0] == "bswap":
             BSWP()
         else:
@@ -141,7 +146,7 @@ def TestRunMode():
 
 def main():
     if (CommandStringPars() and CheckInputedArguments()):
-        if (argsSet["Mode"] == "Test"):
+        if (_argsSet["Mode"] == "Test"):
             TestRunMode()
 
 if (__name__ == "__main__"):
