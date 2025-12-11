@@ -1,11 +1,8 @@
 const: {
-  value: 1452,
-  adress: 0
-  }
-read: {
-  adress: 0
+  value: 10
   }
 bswap: {
+  adress: 0
   }
 write: {
   adress: 1

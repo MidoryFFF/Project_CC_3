@@ -1,6 +1,7 @@
 import sys
 
 _argsSet = {"ProgrammPath": "-", "FilePath": "-", "Mode": "-"}
+_commandsSet = {"CreateConst": 1, "Read": 2, "Write": 3, "Bswap": 4}
 _acamulator = 0
 _RAMmemory = [0] * 64
 _application = []
@@ -55,16 +56,20 @@ def Read(adress):
     #         _acamulator = memory[adress]
     # return 0
 
+def CreateConstant(value):
+    global _acamulator
+    _acamulator = value 
+
 def Write(adress, value):
     if (0 <= adress < len(_RAMmemory)):
         _RAMmemory[adress] = value
     else:
         print("Error: invalid access to memory location")
 
-def BSWP():
+def BSWP(adress):
     global _acamulator
     #print(bin(_acamulator), bin(_acamulator)[6:] + bin(_acamulator)[2:5], int(bin(_acamulator)[6:] + bin(_acamulator)[2:5], 2))
-    _acamulator = int(bin(_acamulator)[8:] + bin(_acamulator)[2:7], 2)
+    _RAMmemory[adress] = int(bin(_acamulator)[8:] + bin(_acamulator)[2:7], 2)
 
 def WriteInFile():
     with open(_argsSet["FilePath"], "w") as f:
@@ -74,6 +79,9 @@ def WriteInFile():
         else:
             return 1
     return 0
+
+def BinPresent(command, argument):
+    return [bin(command), bin(argument)]
 
 def ReadProgram():
     with open(_argsSet["ProgrammPath"]) as f:
@@ -119,20 +127,26 @@ def ParsProgramm(ProgramString: str):
 def RunProgam():
     for i in _application:
         try:
-            print(i[0], *i[1])
+            i[0], i[1]
+            #print(i[0], i[1])
         except:
             return
-        if i[0] == "const":
-            buf = dict()
-            for a in i[1]:
+        buf = dict()
+        for a in i[1]:
+            if (len(a) > 0):
                 buf[a[0]] = a[1]
-            Write(buf["adress"], buf["value"])
+        if i[0] == "const":
+            CreateConstant(buf["value"])
+            print(*BinPresent(_commandsSet["CreateConst"], buf["value"]))
         elif i[0] == "read":
-            Read(i[1][0][1])
+            Read(buf["adress"])
+            print(*BinPresent(_commandsSet["Read"], buf["adress"]))
         elif i[0] == "write":
-            Write(i[1][0][1], _acamulator)
+            Write(buf["adress"], _acamulator)
+            print(*BinPresent(_commandsSet["Write"], buf["adress"]))
         elif i[0] == "bswap":
-            BSWP()
+            BSWP(buf["adress"])
+            print(*BinPresent(_commandsSet["Bswap"], buf["adress"]))
         else:
             print("Error: unkown " + i[0] + " command, this command will be skiped")
 
