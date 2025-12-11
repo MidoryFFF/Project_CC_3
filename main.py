@@ -14,7 +14,6 @@ def CommandStringPars():
             pos = args.index(commandParametr)
             _argsSet[key] = args.pop(pos + 1)
             args.pop(pos)
-            #print(f"arg {commandParametr} has been set to {_argsSet[key]}")
         else:
             print(f"Error: argument {commandParametr} isn't set")
             flag = False
@@ -43,7 +42,7 @@ def CheckInputedArguments():
 
 def Read(adress):
     global _acamulator
-    if (adress < len(_RAMmemory)):
+    if (0 <= adress < len(_RAMmemory)):
         _acamulator = _RAMmemory[adress]
     else:
         print("Error: invalid access to memory location")
@@ -57,17 +56,15 @@ def Read(adress):
     # return 0
 
 def Write(adress, value):
-    if (adress < len(_RAMmemory)):
+    if (0 <= adress < len(_RAMmemory)):
         _RAMmemory[adress] = value
     else:
         print("Error: invalid access to memory location")
-    # with open(_argsSet["FilePath"]) as f:
-    #     f.wr
 
 def BSWP():
     global _acamulator
     #print(bin(_acamulator), bin(_acamulator)[6:] + bin(_acamulator)[2:5], int(bin(_acamulator)[6:] + bin(_acamulator)[2:5], 2))
-    _acamulator = int(bin(_acamulator)[6:] + bin(_acamulator)[2:5], 2)
+    _acamulator = int(bin(_acamulator)[8:] + bin(_acamulator)[2:7], 2)
 
 def WriteInFile():
     with open(_argsSet["FilePath"], "w") as f:
@@ -99,7 +96,6 @@ def MinorPars(argsPars: str, nameAction: str):
             except:
                 print("Error: invalid syntax")
                 return
-        #print(temp[0], temp[1])
     return temp
 
 def ParsProgramm(ProgramString: str):
@@ -107,22 +103,23 @@ def ParsProgramm(ProgramString: str):
     func = prog[0]
     buf = ""
     for i in range(1, len(prog)):
-        if not prog[i][0] in [" ", "\t"]:
-            _application.append(MinorPars(buf, func))
-            func = prog[i]
-            buf = ""
-        else:
-            buf += prog[i]
+        if len(prog[i]) > 0: 
+            if not (prog[i][0] in [" ", "\t"]):
+                _application.append(MinorPars(buf, func))
+                func = prog[i]
+                buf = ""
+            else:
+                buf += prog[i]
     _application.append(MinorPars(buf, func))
     if (None in _application):
         return
-    [print(i) for i in _application]
+    #[print(i) for i in _application]
     return _application
 
 def RunProgam():
     for i in _application:
         try:
-            print(i[0], i[1])
+            print(i[0], *i[1])
         except:
             return
         if i[0] == "const":
@@ -137,7 +134,7 @@ def RunProgam():
         elif i[0] == "bswap":
             BSWP()
         else:
-            print("Error: unkown command")
+            print("Error: unkown " + i[0] + " command, this command will be skiped")
 
 def TestRunMode():
     ReadProgram()
